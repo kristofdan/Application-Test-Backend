@@ -1,8 +1,27 @@
+buildscript {
+    repositories {
+        jcenter()
+    }
+
+    dependencies {
+        classpath 'eu.appsatori:gradle-fatjar-plugin:0.3'
+    }
+}
+
+plugins {
+    id 'pl.allegro.tech.build.axion-release' version '1.4.0'
+}
+
 apply plugin: 'java'
 apply plugin: 'application'
 
 sourceCompatibility = '1.8'
 [compileJava, compileTestJava]*.options*.encoding = 'UTF-8'
+
+scmVersion {
+    versionCreator 'versionWithBranch'
+}
+project.version = scmVersion.version
 
 project.ext {
     dropwizardVersion = "1.2.2"
@@ -24,4 +43,13 @@ dependencies {
 
 run {
  args 'server', 'src/dist/config.yml'
+}
+
+task fatJar(type: Jar) {
+    baseName = project.name + '-all'
+    from { configurations.compile.collect { it.isDirectory() ? it : zipTree(it) } }
+    with jar
+    manifest {
+        attributes 'Main-Class': 'kristofdan.XMLprocessor.XMLprocessorRSApplication'
+    }
 }
